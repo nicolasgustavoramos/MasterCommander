@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Commander | Suite Profesional de Mantenimiento para Windows</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    
+    <!-- SEO y Redes Sociales -->
+    <meta name="description" content="Master Commander: Suite de diagnóstico, limpieza y optimización para Windows con interfaz Cyberpunk. Descarga la versión oficial.">
+    <meta property="og:title" content="Master Commander - Suite Profesional para Windows">
+    <meta property="og:description" content="Descarga la herramienta definitiva de diagnóstico, limpieza y optimización. Interfaz Cyberpunk y máximo rendimiento.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/nicolasgustavoramos/MasterCommander/main/assets/logo.png">
+    <meta property="og:url" content="https://nicolasgustavoramos.github.io/MasterCommander/">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <style>
+        /* =========================================
+           VARIABLES Y RESET
+        ========================================= */
+        :root {
+            --neon-green: #00FF41;
+            --neon-glow: rgba(0, 255, 65, 0.3);
+            --bg-color: #050505;
+            --panel-bg: rgba(10, 10, 10, 0.85);
+            --nav-bg: rgba(5, 5, 5, 0.9);
+            --text-main: #e0e0e0;
+            --text-muted: #888888;
+            --border-color: #222;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Scrollbar personalizada estilo Cyberpunk */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #fff; }
+
+        body {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--neon-green);
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            color: #fff;
+            text-shadow: 0 0 8px var(--neon-green);
+        }
+
+        /* =========================================
+           CANVAS MATRIX RAIN
+        ========================================= */
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.25; /* Sutil para no distraer */
+        }
+
+        /* =========================================
+           NAVEGACIÓN SUPERIOR (STICKY)
+        ========================================= */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--nav-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-glow);
+        }
+
+        .nav-brand img {
+            height: 30px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            color: var(--text-main);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-links a:hover {
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green);
+        }
+
+        /* =========================================
+           LAYOUT PRINCIPAL
+        ========================================= */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 100px 20px 40px; /* Espacio para la barra de navegación */
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Animación de entrada */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* =========================================
+           SECCIÓN HERO (INICIO)
+        ========================================= */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-bottom: 2px solid var(--neon-green);
+            border-radius: 8px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .hero img {
+            width: 180px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px var(--neon-green));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            color: var(--neon-green);
+            text-shadow: 0 0 15px var(--neon-glow);
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+
+        .hero p.subtitle {
+            font-size: 1.2em;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+        }
+
+        .btn-download {
+            display: inline-block;
+            background-color: transparent;
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 18px 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px var(--neon-glow);
+            position: relative;
+            overflow: hidden;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 255, 65, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0); }
+        }
+
+        .btn-download:hover {
+            background-color: var(--neon-green);
+            color: #000;
+            box-shadow: 0 0 30px var(--neon-green);
+            animation: none;
+        }
+
+        .badges {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .badges img {
+            height: 28px;
+            filter: drop-shadow(0 0 5px var(--neon-glow));
+        }
+
+        /* =========================================
+           SECCIONES GENERALES
+        ========================================= */
+        section {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 50px 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+        }
+
+        section h2 {
+            color: var(--neon-green);
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--neon-glow);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        section h2::before {
+            content: "> ";
+            color: #fff;
+        }
+
+        /* =========================================
+           VIDEO
+        ========================================= */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            border: 2px solid var(--neon-glow);
+            border-radius: 6px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
+            margin-top: 20px;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* =========================================
+           CARACTERÍSTICAS (FEATURES)
+        ========================================= */
+        .grid-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--neon-green);
+            padding: 25px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-green);
+            box-shadow: 0 10px 20px rgba(0, 255, 65, 0.1);
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        .feature-card h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-card h3 span {
+            font-size: 1.5em;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95em;
+        }
+
+        /* =========================================
+           GALERÍA DE IMÁGENES
+        ========================================= */
+        .gallery {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-item::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
+
+        /* =========================================
+           INSTALACIÓN Y REQUISITOS
+        ========================================= */
+        .install-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .install-box {
+            background: rgba(0,0,0,0.5);
+            padding: 30px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .install-box h4 {
+            color: var(--neon-green);
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .install-box ul {
+            list-style: none;
+        }
+
+        .install-box ul li {
+            margin-bottom: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .install-box ul li::before {
+            content: "✔";
+            color: var(--neon-green);
+            font-weight: bold;
+        }
+
+        .install-box ol {
+            margin-left: 20px;
+            color: var(--text-muted);
+        }
+
+        .install-box ol li {
+            margin-bottom: 15px;
+        }
+
+        .install-box ol li strong {
+            color: #fff;
+        }
+
+        .smart-screen-warning {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid #FFAA00;
+            border-left: 4px solid #FFAA00;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 30px;
+            color: #FFAA00;
+            font-size: 0.9em;
+        }
+
+        .smart-screen-warning strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        /* =========================================
+           FOOTER
+        ========================================= */
+        footer {
+            text-align: center;
+            padding: 60px 20px 40px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 60px;
+            color: var(--text-muted);
+            font-size: 0.9em;
+            background: var(--nav-bg);
+        }
+
+        footer .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        footer .social-links a {
+            font-size: 1.1em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        footer .social-links a:hover {
+            transform: translateY(-3px);
+        }
+
+        /* =========================================
+           RESPONSIVE
+        ========================================= */
+        @media (max-width: 768px) {
+            nav { padding: 15px 20px; }
+            .nav-links { display: none; /* Ocultar enlaces en móvil */ }
+            .hero h1 { font-size: 2.5em; }
+            .gallery { grid-template-columns: 1fr; }
+            .install-grid { grid-template-columns: 1fr; }
+            section { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Lluvia Matrix -->
+    <canvas id="matrixCanvas"></canvas>
+
+    <!-- Barra de Navegación -->
+    <nav>
+        <div class="nav-brand">
+            <img src="assets/logo.png" alt="Logo">
+            MASTER COMMANDER
+        </div>
+        <div class="nav-links">
+            <a href="#features">Características</a>
+            <a href="#gallery">Capturas</a>
+            <a href="#install">Instalación</a>
+            <a href="https://github.com/nicolasgustavoramos/MasterCommander" target="_blank">GitHub</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- HERO SECTION -->
+        <header class="hero fade-in">
+            <img src="assets/logo.png" alt="Master Commander Logo">
+            <h1>MASTER COMMANDER</h1>
+            <p class="subtitle">Suite Profesional de Diagnóstico y Mantenimiento para Windows</p>
+            
+            <a href="https://github.com/nicolasgustavoramos/MasterCommander/releases/latest" class="btn-download">
+                ⬇ Descargar Versión v1.0.0
+            </a>
+
+            <div class="badges">
+                <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=for-the-badge&logo=windows" alt="Windows">
+                <img src="https://img.shields.io/badge/.NET-9.0-512BD4?style=for-the-badge&logo=dotnet" alt=".NET">
+                <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+            </div>
+        </header>
+
+        <!-- VIDEO SECTION -->
+        <section id="video" class="fade-in">
+            <h2>Demostración en Vivo</h2>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/DmvxGSx48vI" title="Master Commander - SNK PRO Developments" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </section>
+
+        <!-- CARACTERÍSTICAS -->
+        <section id="features" class="fade-in">
+            <h2>Características Principales</h2>
+            <div class="grid-features">
+                <div class="feature-card">
+                    <h3><span>🚀</span> Diagnóstico Rápido</h3>
+                    <p>Visor de hardware completo, test de velocidad de red, estado de la batería y monitor de ping en tiempo real.</p>
+                </div>
+                <div class="feature-card">
+                    <h3><span>🧹</span> Limpieza Profunda</h3>
+                    <p>Elimina archivos temporales, cachés de navegadores (Chrome, Edge, Firefox), miniaturas y vacía la papelera de forma segura.</p>
+                </div>
+                <div class="feature-card">
+                    <h3><span>⚙️</span> Gestores Avanzados</h3>
+                    <p>Control total sobre procesos, servicios de Windows, tareas de inicio, puertos TCP abiertos y desinstalación de programas.</p>
+                </div>
+                <div class="feature-card">
+                    <h3><span>🛡️</span> Red y Seguridad</h3>
+                    <p>Configuración de DNS, auditoría del Firewall de Windows, actualizaciones del sistema y análisis de inicio.</p>
+                </div>
+                <div class="feature-card">
+                    <h3><span>💾</span> Sistema Avanzado</h3>
+                    <p>Desfragmentación (HDD/SSD), reparación de archivos del sistema con SFC y DISM, puntos de restauración y backup del registro.</p>
+                </div>
+                <div class="feature-card">
+                    <h3><span>📊</span> Widget Flotante (HUD)</h3>
+                    <p>Monitorización en tiempo real de CPU, RAM, Red, Temperatura y Batería con una interfaz flotante no intrusiva.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- GALERÍA -->
+        <section id="gallery" class="fade-in">
+            <h2>Capturas de Pantalla</h2>
+            <div class="gallery">
+                <div class="gallery-item">
+                    <img src="docs/screenshots/main.png" alt="Interfaz Principal">
+                </div>
+                <div class="gallery-item">
+                    <img src="docs/screenshots/widget.png" alt="Widget Flotante">
+                </div>
+                <div class="gallery-item">
+                    <img src="docs/screenshots/support.png" alt="Soporte Técnico">
+                </div>
+                <div class="gallery-item">
+                    <img src="docs/screenshots/tools.png" alt="Herramientas del Sistema">
+                </div>
+            </div>
+        </section>
+
+        <!-- INSTALACIÓN -->
+        <section id="install" class="fade-in">
+            <h2>Instalación y Requisitos</h2>
+            
+            <div class="install-grid">
+                <div class="install-box">
+                    <h4>Requisitos Mínimos</h4>
+                    <ul>
+                        <li>Windows 10 (v1607) o Windows 11</li>
+                        <li>.NET 9 Desktop Runtime</li>
+                        <li>50 MB de espacio libre en disco</li>
+                        <li>Permisos de Administrador (UAC)</li>
+                    </ul>
+                </div>
+                
+                <div class="install-box">
+                    <h4>Pasos para Instalar</h4>
+                    <ol>
+                        <li>Haz clic en el botón de <strong>Descargar</strong>.</li>
+                        <li>Ejecuta el archivo <code>MasterCommander_Setup.exe</code>.</li>
+                        <li>Acepta los términos y condiciones legales.</li>
+                        <li>Selecciona la instalación (Completa o Básica).</li>
+                        <li>¡Listo! El programa se abrirá automáticamente.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="smart-screen-warning">
+                <strong>⚠️ Nota sobre Windows SmartScreen</strong>
+                Master Commander es un proyecto independiente. Al no contar con un certificado de firma comercial (EV) de pago, es posible que Windows SmartScreen muestre una advertencia de seguridad. Para instalar de forma segura, haz clic en <b>"Más información"</b> y luego en <b>"Ejecutar de todos modos"</b>. El código es 100% seguro y de código abierto.
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer>
+            <div class="social-links">
+                <a href="https://www.youtube.com/@snkprodevelopments" target="_blank">▶ YouTube</a>
+                <a href="https://github.com/nicolasgustavoramos/MasterCommander" target="_blank">🐙 GitHub</a>
+                <a href="mailto:snkprodevelopments@gmail.com">📧 Soporte</a>
+            </div>
+            <p>Master Commander es un proyecto de código abierto bajo la Licencia MIT.</p>
+            <p>Desarrollado con ❤️ por <strong>SNK PRO Developments</strong> © 2026</p>
+        </footer>
+    </div>
+
+    <!-- SCRIPT MATRIX RAIN Y ANIMACIONES -->
+    <script>
+        // --- MATRIX RAIN ---
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const chars = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(5, 5, 5, 0.05)"; // Estela de fondo
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#00FF41";
+            ctx.font = fontSize + "px Consolas";
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 33);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            for (let x = 0; x < canvas.width / fontSize; x++) {
+                drops[x] = 1;
+            }
+        });
+
+        // --- ANIMACIONES AL HACER SCROLL (Intersection Observer) ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
